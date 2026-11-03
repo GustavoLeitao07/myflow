@@ -1,0 +1,149 @@
+name: Build MyFlow
+
+# Builds unsigned MyFlow installers for Windows, macOS and Linux.
+#  - Every push to main and every pull request: tests + all three builds, with the
+#    installers attached to the run as downloadable artifacts.
+#  - A tag like v1.11.0: the same builds, published to a draft GitHub Release.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Public GitHub release downloads (whisper.cpp, llama.cpp, sherpa-onnx, ...).
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  # Optional: set these repository variables to enable OpenWhispr Cloud sign-in.
+  VITE_OPENWHISPR_API_URL: ${{ vars.VITE_OPENWHISPR_API_URL }}
+  VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL }}
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Install Linux native test dependencies
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxtst-dev libxext-dev libglib2.0-dev libatspi2.0-dev
+      - name: Build better-sqlite3 for the runner's node
+        run: npm rebuild better-sqlite3
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Run tests
+        run: npm test
+
+  build-linux:
+    needs: tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install build and packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxtst-dev libxext-dev libglib2.0-dev libatspi2.0-dev \
+            libpipewire-0.3-dev libpulse-dev rpm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build AppImage, deb, rpm and tar.gz
+        run: npm run build:linux -- --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MyFlow-linux
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  build-windows:
+    needs: tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: npm ci
+      - name: Compile windows-mic-listener.exe
+        shell: cmd
+        run: |
+          if not exist resources\bin mkdir resources\bin
+          cl /O2 /nologo resources\windows-mic-listener.c /Fe:resources\bin\windows-mic-listener.exe ole32.lib oleaut32.lib
+      - name: Build NSIS installer (unsigned)
+        shell: bash
+        run: npm run build:win -- --config electron-builder.unsigned-win.json --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MyFlow-windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+  build-macos:
+    needs: tests
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Install ffmpeg-static for the target architecture
+        if: matrix.arch == 'x64'
+        run: |
+          rm -f node_modules/ffmpeg-static/ffmpeg
+          npm_config_arch=x64 node node_modules/ffmpeg-static/install.js
+      - name: Compile native helpers for ${{ matrix.arch }}
+        run: |
+          npm run compile:globe -- --arch ${{ matrix.arch }}
+          npm run compile:fast-paste -- --arch ${{ matrix.arch }}
+          npm run compile:media-remote -- --arch ${{ matrix.arch }}
+          npm run compile:audio-tap -- --arch ${{ matrix.arch }}
+      - name: Download bundled engines for ${{ matrix.arch }}
+        run: |
+          node scripts/download-whisper-cpp.js --current --platform darwin --arch ${{ matrix.arch }}
+          node scripts/download-llama-server.js --current --platform darwin --arch ${{ matrix.arch }}
+          node scripts/download-sherpa-onnx.js --current --platform darwin --arch ${{ matrix.arch }}
+          node scripts/download-yt-dlp.js --current --platform darwin --arch ${{ matrix.arch }}
+          node scripts/download-qdrant.js --current --platform darwin --arch ${{ matrix.arch }}
+          node scripts/download-meeting-aec-helper.js --current --platform darwin --arch ${{ matrix.arch }}
+      - name: Build DMG (unsigned, ${{ matrix.arch }})
+        run: npm run build:mac -- --${{ matrix.arch }} --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MyFlow-macos-${{ matrix.arch }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+          if-no-files-found: error

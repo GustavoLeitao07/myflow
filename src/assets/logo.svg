@@ -1,0 +1,10 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="mf-bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#19B89D"/>
+<stop offset="1" stop-color="#0B7F6C"/>
+</linearGradient>
+</defs>
+<rect width="1024" height="1024" rx="241" fill="url(#mf-bg)"/>
+<path d="M232 512C292 512 312 372 372 372C432 372 452 652 512 652C572 652 592 372 652 372C712 372 732 512 792 512" stroke="white" stroke-width="74" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
