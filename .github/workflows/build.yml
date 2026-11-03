@@ -3,11 +3,15 @@ name: Build MyFlow
 # Builds unsigned MyFlow installers for Windows, macOS and Linux.
 #  - Every push to main and every pull request: tests + all three builds, with the
 #    installers attached to the run as downloadable artifacts.
-#  - A tag like v1.11.0: the same builds, published to a draft GitHub Release.
+#  - A tag like v1.11.0 (pushed with git, or created by publishing a release on
+#    github.com): the same builds, with the installers and auto-update files
+#    attached to that tag's GitHub Release (created if it doesn't exist yet).
 on:
   push:
     branches: [main]
     tags: ["v*"]
+  release:
+    types: [published]
   pull_request:
   workflow_dispatch:
 
@@ -64,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build AppImage, deb, rpm and tar.gz
-        run: npm run build:linux -- --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+        run: npm run build:linux -- --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: MyFlow-linux
@@ -74,6 +78,18 @@ jobs:
             dist/*.rpm
             dist/*.tar.gz
           if-no-files-found: error
+      - name: Attach to the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: false
+          files: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/latest-linux.yml
 
   build-windows:
     needs: tests
@@ -95,12 +111,22 @@ jobs:
           cl /O2 /nologo resources\windows-mic-listener.c /Fe:resources\bin\windows-mic-listener.exe ole32.lib oleaut32.lib
       - name: Build NSIS installer (unsigned)
         shell: bash
-        run: npm run build:win -- --config electron-builder.unsigned-win.json --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+        run: npm run build:win -- --config electron-builder.unsigned-win.json --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: MyFlow-windows
           path: dist/*.exe
           if-no-files-found: error
+      - name: Attach to the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: false
+          files: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
 
   build-macos:
     needs: tests
@@ -137,7 +163,7 @@ jobs:
           node scripts/download-qdrant.js --current --platform darwin --arch ${{ matrix.arch }}
           node scripts/download-meeting-aec-helper.js --current --platform darwin --arch ${{ matrix.arch }}
       - name: Build DMG (unsigned, ${{ matrix.arch }})
-        run: npm run build:mac -- --${{ matrix.arch }} --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+        run: npm run build:mac -- --${{ matrix.arch }} --publish never
         env:
           TARGET_ARCH: ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
@@ -147,3 +173,13 @@ jobs:
             dist/*.dmg
             dist/*.zip
           if-no-files-found: error
+      - name: Attach to the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: false
+          files: |
+            dist/*.dmg
+            dist/*.zip
+            dist/latest-mac.yml
