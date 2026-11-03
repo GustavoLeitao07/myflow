@@ -27,6 +27,10 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  # onnxruntime-node's postinstall otherwise fetches its optional CUDA provider
+  # from NuGet on Linux, which times out intermittently; MyFlow only runs ONNX on CPU.
+  ONNXRUNTIME_NODE_INSTALL_CUDA: "skip"
+  npm_config_onnxruntime_node_install_cuda: "skip"
   # Optional: set these repository variables to enable OpenWhispr Cloud sign-in.
   VITE_OPENWHISPR_API_URL: ${{ vars.VITE_OPENWHISPR_API_URL }}
   VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL }}
