@@ -653,6 +653,19 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         }
 
         await window.electronAPI?.saveAllKeysToEnv?.();
+        // MyFlow: start the on-device speech server now, in the background, so
+        // the very first dictation doesn't wait for it to load (it is otherwise
+        // only pre-warmed at the next launch).
+        const { localTranscriptionProvider, parakeetModel, useLocalWhisper } =
+          useSettingsStore.getState();
+        if (
+          mode === "local" &&
+          useLocalWhisper &&
+          localTranscriptionProvider === "nvidia" &&
+          parakeetModel
+        ) {
+          void window.electronAPI?.parakeetServerStart?.(parakeetModel)?.catch?.(() => undefined);
+        }
         await window.electronAPI?.markBundleMigrated?.();
         await window.electronAPI?.setOnboardingWindowMode?.("restore");
 

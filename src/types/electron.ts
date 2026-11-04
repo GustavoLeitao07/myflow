@@ -2221,6 +2221,7 @@ declare global {
         options?: { model?: string; language?: string }
       ) => Promise<ParakeetTranscriptionResult>;
       checkParakeetInstallation: () => Promise<ParakeetCheckResult>;
+      parakeetServerStart?: (modelName: string) => Promise<{ success: boolean; error?: string }>;
       getHardwareRecommendation?: () => Promise<{
         memoryGb: number;
         cpuCount: number | null;

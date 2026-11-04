@@ -447,7 +447,8 @@ body.dark:has(.onboarding-canvas) {
   --color-ring: var(--onboarding-accent);
   background-color: var(--onboarding-surface);
   /* Supplied full-width artwork replaces the generated corner washes. Keeping
-     its natural aspect ratio preserves the authored violet-to-blue composition
+     its natural aspect ratio preserves the authored composition (recoloured to
+     MyFlow's teal)
      while the surface token fills the transparent lower portion of the panel. */
   background-image: var(--onboarding-background-light);
   background-position: top center;
