@@ -30,10 +30,18 @@ para funcionar **localmente, sem conta e sem nuvem**.
 
 Os atalhos podem ser trocados em **Settings → Hotkeys**.
 
+### Modo rápido
+
+Por padrão, o ditado não passa pela IA: o texto sai do Orukeet já com pontuação, e um
+filtro instantâneo remove hesitações ("hã", "ahn", "uh", "hmm"). Do soltar do atalho
+ao texto colado leva cerca de 1 segundo. Para a limpeza completa por IA ("modo
+caprichado"), ligue **Settings → AI Models → Ativar limpeza de texto**; o modelo local
+continua sendo usado na edição de seleção por voz.
+
 ### 100% local por padrão
 
 - **Transcrição:** Orukeet (≈670 MB, 25 idiomas incluindo português e inglês, detecção automática), executado pelo sherpa-onnx na CPU. Whisper (whisper.cpp) e NVIDIA Parakeet também estão disponíveis em Settings.
-- **Limpeza e edição:** um LLM local via llama.cpp. O MyFlow escolhe o tamanho pela memória da máquina: 24 GB+ → Qwen3.5 9B, 14 GB+ → Qwen3.5 4B, 7 GB+ → Qwen3.5 2B, menos → LFM2.5 1.2B (com 3 núcleos ou menos ele desce um nível). Dá para trocar no onboarding ou em **Settings → AI Models**.
+- **Edição por voz (e limpeza, se ligada):** um LLM local via llama.cpp. O MyFlow escolhe o tamanho pela memória da máquina: 24 GB+ → Qwen3.5 9B, 14 GB+ → Qwen3.5 4B, 7 GB+ → Qwen3.5 2B, menos → LFM2.5 1.2B (com 3 núcleos ou menos ele desce um nível). Dá para trocar no onboarding ou em **Settings → AI Models**.
 - Nenhum áudio ou texto sai do seu computador. O login no OpenWhispr Cloud (serviço de terceiros) fica oculto, a não ser que o build seja feito com `VITE_OPENWHISPR_API_URL`.
 
 <p align="center">

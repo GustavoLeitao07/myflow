@@ -1,14 +1,14 @@
 name: Build MyFlow
 
 # Builds unsigned MyFlow installers for Windows, macOS and Linux.
-#  - Every push to main and every pull request: tests + all three builds, with the
+#  - Every push to main or dev, and every pull request: tests + all three builds, with the
 #    installers attached to the run as downloadable artifacts.
 #  - A tag like v1.11.0 (pushed with git, or created by publishing a release on
 #    github.com): the same builds, with the installers and auto-update files
 #    attached to that tag's GitHub Release (created if it doesn't exist yet).
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     tags: ["v*"]
   release:
     types: [published]

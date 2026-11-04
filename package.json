@@ -1,6 +1,6 @@
 {
   "name": "myflow",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "description": "MyFlow: press a shortcut, speak, and polished text appears where you type. Based on OpenWhispr.",
   "main": "main.js",
   "desktopName": "myflow.desktop",
