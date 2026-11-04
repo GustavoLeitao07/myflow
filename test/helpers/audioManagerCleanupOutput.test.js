@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const { createRendererServer, installBrowserGlobals } = require("../lib/rendererTestHarness");
 
 const RAW = "um so can you uh send me the report by friday";
+const TIDIED = "so can you send me the report by friday";
 const CLEAN = "Can you send me the report by Friday?";
 const DUPLICATE = `**Cleaned transcript:**\n${CLEAN}\n${CLEAN}`;
 const MESSAGE_KEY = "hooks.audioRecording.errorDescriptions.cleanupDuplicated";
@@ -150,7 +151,8 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
     window.electronAPI.processLocalReasoning = async () => ({ success: true, text: DUPLICATE });
     const manager = createManager();
     const result = await manager.processTranscriptionCore(RAW, "local");
-    assert.equal(result, RAW);
+    // MyFlow: the raw fallback still gets the instant hesitation tidy-up.
+    assert.equal(result, TIDIED);
     assert.equal(manager._takePendingResultExtras().cleanupFailure.messageKey, MESSAGE_KEY);
     let saved;
     window.electronAPI.recordAnalyticsEvent = async () => {};
@@ -159,6 +161,6 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
       return { success: true };
     };
     await manager.saveTranscription(result, RAW);
-    assert.deepEqual(saved, { text: RAW, rawText: RAW });
+    assert.deepEqual(saved, { text: TIDIED, rawText: RAW });
   });
 });

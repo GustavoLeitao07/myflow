@@ -732,7 +732,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         // Only a self-hosted or custom endpoint has one; an empty write would
         // just churn five secure-store entries.
         ...(chatAgentCustomApiKey ? { cleanupCustomApiKey: chatAgentCustomApiKey } : {}),
-        useCleanupModel: true,
+        // MyFlow "fast mode": on-device dictation skips the AI cleanup pass (a
+        // local model adds seconds to every dictation); the local model still
+        // powers voice editing of selected text. Settings → AI Models turns
+        // cleanup back on.
+        useCleanupModel: mode !== "local",
         useDictationAgent: true,
       });
     },

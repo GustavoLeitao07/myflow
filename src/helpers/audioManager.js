@@ -5,6 +5,7 @@ import {
 } from "../services/ai/chatRequestBody";
 import logger from "../utils/logger";
 import { assertValidCleanupOutput } from "../utils/cleanupOutput";
+import { tidyDictation } from "../utils/dictationTidy";
 import { isAzureOpenAIEndpoint } from "../utils/urlUtils";
 import { withSessionRefresh } from "../lib/auth";
 import { getBaseLanguageCode, getLanguageLabel } from "../utils/languageSupport";
@@ -3443,7 +3444,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         reason: "No cleanup or dictation-agent model available",
       });
       this._noteCleanupRoute(settings, { kind: "skip", cleanupReachable });
-      return normalizedText;
+      return tidyDictation(normalizedText);
     }
 
     const useReasoning = this.voiceAgentRequested || (await this.isReasoningAvailable());
@@ -3477,7 +3478,9 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           this.notifyTranslationFallback("unreachable");
         }
         this._noteCleanupRoute(settings, route);
-        if (route.kind === "skip") return normalizedText;
+        // MyFlow fast mode: no AI pass, so the instant rule-based tidy-up
+        // removes spoken hesitations ("uh", "hmm", "hã") instead.
+        if (route.kind === "skip") return tidyDictation(normalizedText);
 
         if (route.kind === "translation") {
           const { text: translatedText } = await this.runTranslationChain({
@@ -3561,7 +3564,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       reason: useReasoning ? "Reasoning failed" : "Reasoning not enabled",
     });
 
-    return normalizedText;
+    return this.voiceAgentRequested ? normalizedText : tidyDictation(normalizedText);
   }
 
   shouldStreamTranscription(model, provider) {

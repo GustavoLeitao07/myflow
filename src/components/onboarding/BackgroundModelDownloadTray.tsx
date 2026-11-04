@@ -92,7 +92,8 @@ function activatePendingLocalModel(kind: PendingLocalModelKind, modelId: string)
     cleanupCloudMode: "local",
     cleanupProvider: selection.provider,
     cleanupModel: selection.modelId,
-    useCleanupModel: true,
+    // MyFlow "fast mode" (see OnboardingFlow): local dictation skips AI cleanup.
+    useCleanupModel: false,
     useDictationAgent: true,
   });
 }
