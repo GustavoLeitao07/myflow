@@ -163,8 +163,6 @@ jobs:
           node scripts/download-whisper-cpp.js --current --platform darwin --arch ${{ matrix.arch }}
           node scripts/download-llama-server.js --current --platform darwin --arch ${{ matrix.arch }}
           node scripts/download-sherpa-onnx.js --current --platform darwin --arch ${{ matrix.arch }}
-          node scripts/download-yt-dlp.js --current --platform darwin --arch ${{ matrix.arch }}
-          node scripts/download-qdrant.js --current --platform darwin --arch ${{ matrix.arch }}
           node scripts/download-meeting-aec-helper.js --current --platform darwin --arch ${{ matrix.arch }}
       - name: Build DMG (unsigned, ${{ matrix.arch }})
         run: npm run build:mac -- --${{ matrix.arch }} --publish never

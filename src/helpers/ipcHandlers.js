@@ -14144,6 +14144,19 @@ class IPCHandlers {
 
     const diarizationEnabled = (sessionConfig?.enabled ?? this.speakerDiarizationEnabled) !== false;
 
+    // MyFlow no longer bundles or pre-downloads the speaker models; the first
+    // meeting that wants speaker labels fetches them in the background, so the
+    // next one is labelled.
+    if (
+      diarizationEnabled &&
+      this.diarizationManager?.getBinaryPath() &&
+      !this.diarizationManager.isModelDownloaded()
+    ) {
+      this.diarizationManager.downloadModels().catch((err) => {
+        debugLogger.debug("On-demand diarization model download failed", { error: err.message });
+      });
+    }
+
     if (!diarizationEnabled || !this.diarizationManager?.isAvailable() || !rawPcmPath) {
       sendUndiarized();
       return;

@@ -1497,17 +1497,9 @@ async function startApp() {
     });
   }
 
-  // Auto-download diarization models if binary is available
-  if (
-    diarizationManager.getBinaryPath() &&
-    (!diarizationManager.isModelDownloaded() || !diarizationManager.isVadModelDownloaded())
-  ) {
-    diarizationManager.downloadModels().catch((err) => {
-      debugLogger.debug("Diarization model auto-download error (non-fatal)", {
-        error: err.message,
-      });
-    });
-  }
+  // MyFlow: speaker-diarization models (meetings and uploads only) are no longer
+  // downloaded at every launch; uploads and the first labelled meeting fetch them
+  // on demand (see "download-diarization-models" and the meeting post-processing).
 
   const QdrantManager = require("./src/helpers/qdrantManager");
   const SemanticSearchLifecycle = require("./src/helpers/semanticSearchLifecycle");

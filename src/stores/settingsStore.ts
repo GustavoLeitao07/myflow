@@ -1789,7 +1789,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   floatingIconAutoHide: readBoolean("floatingIconAutoHide", false),
   startMinimized: readBoolean("startMinimized", false),
   notificationsEnabled: readBoolean("notificationsEnabled", true),
-  notifyMeetingDetection: readBoolean("notifyMeetingDetection", true),
+  // MyFlow: meeting detection (mic/process watching) is opt-in.
+  notifyMeetingDetection: readBoolean("notifyMeetingDetection", false),
   notifyCalendarReminders: readBoolean("notifyCalendarReminders", true),
   autoUpdatesEnabled: readBoolean("autoUpdatesEnabled", true),
   ...(() => {
@@ -1822,7 +1823,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   gcalPrimaryOnly: readBoolean("gcalPrimaryOnly", true),
   mcalPrimaryOnly: readBoolean("mcalPrimaryOnly", true),
   appleCalendarConnected: readBoolean("appleCalendarConnected", false),
-  meetingProcessDetection: readBoolean("meetingProcessDetection", true),
+  meetingProcessDetection: readBoolean("meetingProcessDetection", false),
   speakerDiarizationEnabled: readBoolean("speakerDiarizationEnabled", true),
   // Off by default: VAD on pause-heavy dictations can strip the speech and make
   // Whisper hallucinate the dictionary prompt as the transcript (#1454).
