@@ -73,7 +73,7 @@ jobs:
         run: npm ci
       - name: Build AppImage, deb, rpm and tar.gz
         run: npm run build:linux -- --publish never
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: MyFlow-linux
           path: |
@@ -116,7 +116,7 @@ jobs:
       - name: Build NSIS installer (unsigned)
         shell: bash
         run: npm run build:win -- --config electron-builder.unsigned-win.json --publish never
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: MyFlow-windows
           path: dist/*.exe
@@ -168,7 +168,7 @@ jobs:
         run: npm run build:mac -- --${{ matrix.arch }} --publish never
         env:
           TARGET_ARCH: ${{ matrix.arch }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: MyFlow-macos-${{ matrix.arch }}
           path: |
