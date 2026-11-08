@@ -244,7 +244,8 @@
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "include": "resources/nsis/installer.nsh"
+    "include": "resources/nsis/installer.nsh",
+    "artifactName": "${productName}-Setup-${version}.${ext}"
   },
   "dmg": {
     "title": "MyFlow",
